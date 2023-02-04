@@ -68,8 +68,6 @@ def start(message) -> str:
 
 def play(userID) -> str:
 
-    # global users
-
     users[userID]['settings']['limit_to_take'] = users[userID]['settings']['start_limit_to_take']
     users[userID]['settings']['current_candy'] = users[userID]['settings']['start_candy']
     message = f'Начали!\nНа столе {users[userID]["settings"]["current_candy"]} конфет\nПервым ходит {users[userID]["settings"]["current_gamer"]}'

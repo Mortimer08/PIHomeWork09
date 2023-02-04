@@ -15,6 +15,7 @@ kb_main_menu.add(btn_rules,btn_location)
 key_file = open('key.txt','r')
 key = key_file.read()
 key_file.close()
+#6052286820:AAHm7WW_OwuwrajsLOvdILH8Fg27j5WowBg
 bot = Bot(key)
 
 dp = Dispatcher(bot)

@@ -1,7 +1,6 @@
 from create import dp
 from aiogram import Bot, Dispatcher, types
 import model
-from create import kb_main_menu
 
 commands = [
     '\n/start - запустить бота',
@@ -20,7 +19,7 @@ waiting = 'menu'
 async def mes_start(message: types.Message):
 
     model.start(message)
-    await message.answer('Привет!\nБудем играть в конфеты.\nНаберите /help для вывода списка команд ', reply_markup=kb_main_menu)
+    await message.answer('Привет!\nБудем играть в конфеты.\nНаберите /help для вывода списка команд ')
 
 
 @dp.message_handler(commands=['help'])

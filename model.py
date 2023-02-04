@@ -1,4 +1,6 @@
 from random import randint as RI
+import spy
+from datetime import datetime
 
 start_candy = 100
 current_candy = start_candy
@@ -12,7 +14,11 @@ rules = '''На столе лежат конфеты.
 Игроки по очереди берут конфеты, не более оговоренного количества за ход.
 Игрок, забравший последнюю конфету проигрывает.'''
 
-def start() -> str:
+users = {}
+
+
+def start(message) -> str:
+
     global current_candy
     global start_candy
     global limit_to_take
@@ -27,129 +33,134 @@ def start() -> str:
     gamer2_name = 'Бот'
     current_gamer = gamer1_name
     winner = ''
+    user_name = message.from_user.username
+    user_firstname = message.from_user.first_name
+    user_id = message.from_user.id
+    user_start_time = datetime.now().strftime('%d.%m.%Y, %H:%M:%S')
+
+    user_data = []
+    user_data.append(user_start_time)
+    user_data.append(user_name)
+    user_data.append(user_firstname)
+    user_data.append(user_id)
+    user_data = list(map(str, user_data))
+    spy.log(user_data)
+
+    if user_id not in users.keys():
+        users[user_id] = {}
+        users[user_id]['user_start_time'] = user_start_time
+        users[user_id]['user_name'] = user_name
+        users[user_id]['user_first_name'] = user_firstname
+        users[user_id]['settings'] = {}
+        users[user_id]['settings']['start_candy'] = start_candy
+        users[user_id]['settings']['current_candy'] = start_candy
+        users[user_id]['settings']['start_limit_to_take'] = start_limit_to_take
+        users[user_id]['settings']['current_gamer'] = gamer1_name
+        users[user_id]['settings']['winner'] = ''
+
+        print(f'{users[user_id]["user_start_time"]} подключился {users[user_id]["user_name"]}, всего игроков онлайн: {len(users.values())}')
+
     message = f'Начали!\nНа столе {current_candy} конфет\nПервым ходит {current_gamer}'
     if current_gamer == gamer1_name:
         message += '\nСколько конфет возьмёте?'
     return message
 
-def play() -> str:
-    global current_candy
-    global start_candy
-    global limit_to_take
-    limit_to_take = start_limit_to_take
-    current_candy = start_candy
-    message = f'Начали!\nНа столе {current_candy} конфет\nПервым ходит {current_gamer}'
-    if current_gamer == gamer1_name:
+
+def play(userID) -> str:
+
+    # global users
+
+    users[userID]['settings']['limit_to_take'] = users[userID]['settings']['start_limit_to_take']
+    users[userID]['settings']['current_candy'] = users[userID]['settings']['start_candy']
+    message = f'Начали!\nНа столе {users[userID]["settings"]["current_candy"]} конфет\nПервым ходит {users[userID]["settings"]["current_gamer"]}'
+    if users[userID]["settings"]["current_gamer"] == gamer1_name:
         message += '\nСколько конфет возьмёте?'
     return message
 
 
-def settings() -> str:
-    global start_candy
-    global current_gamer
-    global start_limit_to_take
+def settings(userID) -> str:
+
+    global users
     message = ''
-    message += f'На старте будет {start_candy} конфет\n'
-    message += f'За раз можно брать не более {start_limit_to_take} конфет\n'
-    message += f'Первым ходит {current_gamer}\n'
+    message += f'На старте будет {users[userID]["settings"]["start_candy"]} конфет\n'
+    message += f'За раз можно брать не более {users[userID]["settings"]["start_limit_to_take"]} конфет\n'
+    message += f'Первым ходит {users[userID]["settings"]["current_gamer"]}\n'
 
     return message
 
 
-def fate() -> str:
-    global current_gamer
+def fate(userID) -> str:
+
     if RI(1, 2) == 1:
-        current_gamer = gamer2_name
+        users[userID]["settings"]["current_gamer"] = gamer2_name
     else:
-        current_gamer = gamer1_name
-    message = f'Первым ходит {current_gamer}'
+        users[userID]["settings"]["current_gamer"] = gamer1_name
+    message = f'Первым ходит {users[userID]["settings"]["current_gamer"]}'
     return message
 
 
-def set(custom_start_candy: int) -> str:
-    global current_candy
-    global start_candy
-    start_candy = custom_start_candy
-    message = f'На старте будет {start_candy} конфет'
-    if start_limit_to_take>=start_candy:
-        start_candy = start_limit_to_take*3
-        message = f'Максимум за ход {start_limit_to_take} конфет\nНа старте будет {start_candy} конфет'
+def set(userID, custom_start_candy: int) -> str:
+
+    users[userID]["settings"]["start_candy"] = custom_start_candy
+    message = f'На старте будет {users[userID]["settings"]["start_candy"]} конфет'
+    if users[userID]["settings"]["start_limit_to_take"] >= users[userID]["settings"]["start_candy"]:
+        users[userID]["settings"]["start_candy"] = users[userID]["settings"]["start_limit_to_take"]*3
+        message = f'Максимум за ход {users[userID]["settings"]["start_limit_to_take"]} конфет\nНа старте будет {users[userID]["settings"]["start_candy"]} конфет'
     return message
 
 
-def take(custom_take_candy: int) -> str:
-    global start_limit_to_take
-    global start_candy
-    start_limit_to_take = custom_take_candy
-    message = f'Максимум за ход {start_limit_to_take} конфет'
-    if start_limit_to_take>=start_candy:
-        start_candy = start_limit_to_take*3
-        message = f'Максимум за ход {start_limit_to_take} конфет\nНа старте будет {start_candy} конфет'
-    
+def take(userID, custom_take_candy: int) -> str:
+
+    users[userID]["settings"]["start_limit_to_take"] = custom_take_candy
+    message = f'Максимум за ход {users[userID]["settings"]["start_limit_to_take"]} конфет'
+    if users[userID]["settings"]["start_limit_to_take"] >= users[userID]["settings"]["start_candy"]:
+        users[userID]["settings"]["start_candy"] = users[userID]["settings"]["start_limit_to_take"]*3
+        message = f'Максимум за ход {users[userID]["settings"]["start_limit_to_take"]} конфет\nНа старте будет {users[userID]["settings"]["start_candy"]} конфет'
+
     return message
 
 
-def human_move(human_takes: int) -> str:
-    global current_gamer
-    global current_candy
-    global limit_to_take
-    if human_takes > limit_to_take or human_takes < 1:
-        message = f'Столько конфет брать нельзя\nНа столе осталось {current_candy} конфет\nЗа раз можно брать не более {limit_to_take} конфет'
+def human_move(userID, human_takes: int) -> str:
+
+    if human_takes > users[userID]["settings"]["limit_to_take"] or human_takes < 1:
+        message = f'Столько конфет брать нельзя\nНа столе осталось {users[userID]["settings"]["current_candy"]} конфет\nЗа раз можно брать не более {users[userID]["settings"]["limit_to_take"]} конфет'
     else:
-        current_candy -= human_takes      
+        users[userID]["settings"]["current_candy"] -= human_takes
 
-        if current_candy <= limit_to_take:
-            limit_to_take = current_candy
-        message = f'Вы взяли {human_takes} конфет\nНа столе осталось {current_candy} конфет\nЗа раз можно брать не более {limit_to_take} конфет'
-        if current_candy == 0:
-            winner = current_gamer
-            message = f'{winner} выиграл!'
-        if current_gamer == gamer2_name:
-            current_gamer = gamer1_name
-        elif current_gamer == gamer1_name:
-            current_gamer = gamer2_name
+        if users[userID]["settings"]["current_candy"] <= users[userID]["settings"]["limit_to_take"]:
+            users[userID]["settings"]["limit_to_take"] = current_candy
+        message = f'Вы взяли {human_takes} конфет\nНа столе осталось {users[userID]["settings"]["current_candy"]} конфет\nЗа раз можно брать не более {users[userID]["settings"]["limit_to_take"]} конфет'
+        if users[userID]["settings"]["current_candy"] == 0:
+            users[userID]["settings"]["winner"] = users[userID]["settings"]["current_gamer"]
+            message = f'{users[userID]["settings"]["winner"]} выиграл!'
+        if users[userID]["settings"]["current_gamer"] == gamer2_name:
+            users[userID]["settings"]["current_gamer"] = gamer1_name
+        elif users[userID]["settings"]["current_gamer"] == gamer1_name:
+            users[userID]["settings"]["current_gamer"] = gamer2_name
 
     return message
 
 
-def bot_move() -> str:
-    global current_gamer
-    global current_candy
-    global limit_to_take
-    if current_candy <= limit_to_take:
-        bot_takes = current_candy
-    elif current_candy % limit_to_take > 1:
-        bot_takes = current_candy % limit_to_take-1
+def bot_move(userID) -> str:
+
+    if users[userID]["settings"]["current_candy"] <= users[userID]["settings"]["limit_to_take"]:
+        bot_takes = users[userID]["settings"]["current_candy"]
+    elif users[userID]["settings"]["current_candy"] % users[userID]["settings"]["limit_to_take"] > 1:
+        bot_takes = users[userID]["settings"]["current_candy"] % users[userID]["settings"]["limit_to_take"]-1
     else:
         bot_takes = 1
-    current_candy -= bot_takes
-    
-    if current_candy <= limit_to_take:
-        limit_to_take = current_candy
-    message = f'Бот взял {bot_takes} конфет\nНа столе осталось {current_candy} конфет\nЗа раз можно брать не более {limit_to_take} конфет\nСколько конфет возьмёте?'
-    if current_candy == 0: 
-        winner = current_gamer
-        message = f'Бот взял {bot_takes} конфет\nНа столе осталось {current_candy} конфет'
-        message += f'\n{winner} выиграл!'
-    if current_gamer == gamer2_name:
-        current_gamer = gamer1_name
-    elif current_gamer == gamer1_name:
-        current_gamer = gamer2_name
+    users[userID]["settings"]["current_candy"] -= bot_takes
 
-    return message
+    if users[userID]["settings"]["current_candy"] <= users[userID]["settings"]["limit_to_take"]:
+        users[userID]["settings"]["limit_to_take"] = users[userID]["settings"]["current_candy"]
+    message = f'Бот взял {bot_takes} конфет\nНа столе осталось {users[userID]["settings"]["current_candy"]} конфет\nЗа раз можно брать не более {users[userID]["settings"]["limit_to_take"]} конфет\nСколько конфет возьмёте?'
+    if users[userID]["settings"]["current_candy"] == 0:
+        users[userID]["settings"]["winner"] = users[userID]["settings"]["current_gamer"]
+        message = f'Бот взял {bot_takes} конфет\nНа столе осталось {users[userID]["settings"]["current_candy"]} конфет'
+        message += f'\n{users[userID]["settings"]["winner"]} выиграл!'
+    if users[userID]["settings"]["current_gamer"] == gamer2_name:
+        users[userID]["settings"]["current_gamer"] = gamer1_name
+    elif users[userID]["settings"]["current_gamer"] == gamer1_name:
+        users[userID]["settings"]["current_gamer"] = gamer2_name
 
-
-def is_win() -> str:
-    global current_candy
-    global current_gamer
-    global winner
-    message = 'Продолжаем!'
-    if current_candy == 0:
-
-        winner = current_gamer
-        message = f'{winner} выиграл!'
-        if current_gamer == gamer2_name:
-            current_gamer = gamer1_name
-        elif current_gamer == gamer1_name:
-            current_gamer = gamer2_name
     return message

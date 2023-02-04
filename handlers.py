@@ -81,16 +81,16 @@ async def mes_waiting(message: types.Message):
     if waiting == 'menu' or not user_message.isdigit():
         await message.answer('Это неуместно')
     elif waiting == 'set':
-        answer = model.set(message.from_user.id,int(user_message))
+        answer = model.set(message.from_user.id, int(user_message))
         await message.answer(answer)
         waiting = 'menu'
     elif waiting == 'take':
-        answer = model.take(message.from_user.id,int(user_message))
+        answer = model.take(message.from_user.id, int(user_message))
         await message.answer(answer)
         waiting = 'menu'
 
     elif waiting == 'human_move':
-        answer = model.human_move(message.from_user.id,int(user_message))
+        answer = model.human_move(message.from_user.id, int(user_message))
         await message.answer(answer)
 
         if 'выиграл' in answer:

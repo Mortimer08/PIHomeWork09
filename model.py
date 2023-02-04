@@ -12,6 +12,26 @@ rules = '''На столе лежат конфеты.
 Игроки по очереди берут конфеты, не более оговоренного количества за ход.
 Игрок, забравший последнюю конфету проигрывает.'''
 
+def start() -> str:
+    global current_candy
+    global start_candy
+    global limit_to_take
+    global gamer1_name
+    global gamer2_name
+    global winner
+    start_candy = 100
+    current_candy = start_candy
+    start_limit_to_take = 28
+    limit_to_take = start_limit_to_take
+    gamer1_name = 'Человек'
+    gamer2_name = 'Бот'
+    current_gamer = gamer1_name
+    winner = ''
+    message = f'Начали!\nНа столе {current_candy} конфет\nПервым ходит {current_gamer}'
+    if current_gamer == gamer1_name:
+        message += '\nСколько конфет возьмёте?'
+    return message
+
 def play() -> str:
     global current_candy
     global start_candy
@@ -51,13 +71,21 @@ def set(custom_start_candy: int) -> str:
     global start_candy
     start_candy = custom_start_candy
     message = f'На старте будет {start_candy} конфет'
+    if start_limit_to_take>=start_candy:
+        start_candy = start_limit_to_take*3
+        message = f'Максимум за ход {start_limit_to_take} конфет\nНа старте будет {start_candy} конфет'
     return message
 
 
 def take(custom_take_candy: int) -> str:
     global start_limit_to_take
+    global start_candy
     start_limit_to_take = custom_take_candy
     message = f'Максимум за ход {start_limit_to_take} конфет'
+    if start_limit_to_take>=start_candy:
+        start_candy = start_limit_to_take*3
+        message = f'Максимум за ход {start_limit_to_take} конфет\nНа старте будет {start_candy} конфет'
+    
     return message
 
 

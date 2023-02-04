@@ -1,8 +1,9 @@
 from create import dp
 from aiogram import Bot, Dispatcher, types
-
+import spy
 import model
-
+from create import kb_main_menu
+from datetime import datetime
 commands = [
     '\n/start - запустить бота',
     '\n/help - вывести список команд',
@@ -19,7 +20,20 @@ waiting = 'menu'
 
 @dp.message_handler(commands=['start'])
 async def mes_start(message: types.Message):
-    await message.answer('Привет!\nБудем играть в конфеты.\nНаберите /help для вывода списка команд ')
+    user_name = message.from_user.username
+    user_firstname = message.from_user.first_name
+    user_id = message.from_user.id
+    user_start_time = datetime.now().strftime('%d.%m.%Y, %H:%M:%S')
+    
+    user_data = []
+    user_data.append(user_start_time)
+    user_data.append(user_name)
+    user_data.append(user_firstname)
+    user_data.append(user_id)
+    user_data = list(map(str,user_data))
+    spy.log(user_data)
+    model.start()
+    await message.answer('Привет!\nБудем играть в конфеты.\nНаберите /help для вывода списка команд ', reply_markup=kb_main_menu)
 
 
 @dp.message_handler(commands=['help'])
